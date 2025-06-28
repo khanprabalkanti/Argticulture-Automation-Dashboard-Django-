@@ -1,3 +1,4 @@
+{% load static tailwind_tags %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -8,14 +9,14 @@
   </style>
 </head>
 <body>
-  <h2>Sensor Data</h2>
+  <h2 class="bg-orange-500">Sensor Data</h2>
   <canvas id="sensorChart" width="400" height="200"></canvas>
 
   <div class="toggle">
     <label for="actuatorSwitch">Pump Control:</label>
     <input type="checkbox" id="actuatorSwitch">
   </div>
-
+{% tailwind_css %}
   <script>
     const chartCtx = document.getElementById('sensorChart').getContext('2d');
     const sensorChart = new Chart(chartCtx, {
