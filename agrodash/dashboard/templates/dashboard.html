@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Agro Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .toggle { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h2>Sensor Data</h2>
+  <canvas id="sensorChart" width="400" height="200"></canvas>
+
+  <div class="toggle">
+    <label for="actuatorSwitch">Pump Control:</label>
+    <input type="checkbox" id="actuatorSwitch">
+  </div>
+
+  <script>
+    const chartCtx = document.getElementById('sensorChart').getContext('2d');
+    const sensorChart = new Chart(chartCtx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Soil Moisture',
+          data: [],
+          borderColor: 'green',
+          tension: 0.1
+        }]
+      }
+    });
+
+    async function fetchSensorData() {
+      const res = await fetch('/api/sensor-data/');
+      const data = await res.json();
+      const latest = data[data.length - 1];
+      const now = new Date().toLocaleTimeString();
+      sensorChart.data.labels.push(now);
+      sensorChart.data.datasets[0].data.push(latest.soil_moisture);
+      sensorChart.update();
+    }
+
+    async function fetchActuatorState() {
+      const res = await fetch('/api/actuators/');
+      const data = await res.json();
+      document.getElementById('actuatorSwitch').checked = data.is_on;
+    }
+
+    document.getElementById('actuatorSwitch').addEventListener('change', async function() {
+      await fetch('/api/update-actuator/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_on: this.checked })
+      });
+    });
+
+    setInterval(() => {
+      fetchSensorData();
+      fetchActuatorState();
+    }, 5000); // Every 5 sec
+  </script>
+</body>
+</html>
